@@ -52,31 +52,31 @@
             <div id="citsci-buttons-panel">
               <h4>Tools</h4>
               <button
-                  @click="setMode('circle'); setText(craterTitle, craterInfo); setExamples('circle')"
+                  @click="setMode('circle');"
                   :class="{'button-not-selected': mode !== 'circle', 'button-selected': mode === 'circle'}"
                   style="background-image: url('https://wm-web-assets.s3.us-east-2.amazonaws.com/buttons/button-crater.png'); background-size: contain;"
                   title="Crater Tool"
               ></button>
               <button
-                  @click="setMode('line'); setText(boulderTitle, boulderInfo); setExamples('line')"
+                  @click="setMode('line');"
                   :class="{'button-not-selected': mode !== 'line', 'button-selected': mode === 'line'}"
                   style="background-image: url('https://wm-web-assets.s3.us-east-2.amazonaws.com/buttons/button-boulder.png'); background-size: contain;"
                   title="Boulder Tool"
               ></button>
               <button
-                  @click="setMode('dot'); setText(rocksTitle, rocksInfo); setExamples('dot')"
+                  @click="setMode('dot');"
                   :class="{'button-not-selected': mode !== 'dot', 'button-selected': mode === 'dot'}"
                   style="background-image: url('https://wm-web-assets.s3.us-east-2.amazonaws.com/buttons/button-rocks.png'); background-size: contain;"
                   title="Rock Tool"
               ></button>
               <button
-                  @click="setMode('erase'); setText(eraseTitle, eraseInfo); setExamples('erase')"
+                  @click="setMode('erase');"
                   :class="{'button-not-selected': mode !== 'erase', 'button-selected': mode === 'erase'}"
                   style="background-image: url('https://wm-web-assets.s3.us-east-2.amazonaws.com/buttons/button-erase.png');background-size: contain;"
                   title="Erase Tool"
               ></button>
               <button
-                  @click="setMode('edit'); setText(eraseTitle, eraseInfo); setExamples('erase')"
+                  @click="setMode('edit');"
                   :class="{'button-not-selected': mode !== 'edit', 'button-selected': mode === 'edit'}"
                   style="background-image: url('https://wm-web-assets.s3.us-east-2.amazonaws.com/buttons/button-edit.png');background-size: contain;"
                   title="Move / Resize Tool"
@@ -93,6 +93,7 @@
                   @clearDrawing="clearDrawing"
                   @updateDrawing="handleUpdateDrawing"
                   :currStep="currStep"
+                  :tutorialNoMarkSteps="nonMarkingStepsArray"
                   @canvas-click-during-tutorial="handleCanvasClickDuringTutorial"
                   :correctRockLocations="correctRockLocations"
                   :correctBoulderLocations="correctBoulderLocations"
@@ -169,7 +170,7 @@
     </PageLayout>
   </template>
   <template v-else>
-    <PageLayout title=": Lunar Melt BETA">
+    <PageLayout title=": Lunar Melt">
       <div class="content-layout">
         <div id="citsci-main-panel">
           <div id="citsci-buttons-panel">
@@ -194,6 +195,8 @@ const isNoFingers = useIsNoFingers();
 
 const {user, isAuthenticated, loginWithRedirect, isLoading} = useAuth0();
 
+const router = useRouter();
+
 const imageUrl = ref(null);
 const mode = ref(null);
 const drawings = ref([]);
@@ -209,7 +212,7 @@ const rocksInfo = ref("Click in the centers of rocks to mark their locations.");
 const eraseTitle = ref("Erasing");
 const eraseInfo = ref("Click on a mark to delete it.");
 const exampleImages = ref([]);
-
+const nonMarkingStepsArray = ref([1,2,6]);
 
 const exampleMarks = ref(null);
 
@@ -218,7 +221,7 @@ const currStep = ref(0); // Start at 0, meaning the tutorial is not active yet
 const showPatienceMessage = ref(false); // New state variable
 const validationMessage = ref(null); // NEW: Reactive variable for validation message
 const showValidationMessage = ref(false); // NEW: State for showing validation message
-const router = useRouter();
+
 
 const handleLogin = () => {
   loginWithRedirect();
@@ -301,7 +304,7 @@ const tutorialSteps = [
   },
   {
     id: 1,
-    title: "Welcome to Lunar Melt!",
+    title: "Welcome to the Lunar Melt project",
     content: "Ready to get mapping? " +
         "Your work will accelerate research into how asteroid impacts changed the Lunar surface.  Our research " +
         "might even help researchers find the geologic features that unlock the history of both the Earth " +
@@ -347,7 +350,7 @@ const tutorialSteps = [
     title: "Measure Boulders",
     content: "These large chunks of rock are worth measuring! Use the drawing tool to put a line along the longest " +
         "axis of the 2 big boulders in this image. <br><br>" +
-    "Remember to click the boulder button first to select your tool! <br><br>" ,
+        "Remember to click the boulder button first to select your tool! <br><br>" ,
     className: "step-4",
     image1: "https://wm-web-assets.s3.us-east-2.amazonaws.com/buttons/button-boulder.png",
     image2: "",
@@ -453,10 +456,32 @@ const setMode = (newMode) => {
   mode.value = newMode;
   if (canvasMapRef.value) {
     canvasMapRef.value.setDrawingMode(newMode);
+    setExamples(newMode)
+    switch (newMode) {
+      case 'circle':
+        setText(craterTitle, craterInfo);
+        return
+      case 'line':
+        setText(boulderTitle, boulderInfo);
+        return
+      case 'dot':
+        setText(rocksTitle, rocksInfo);
+        return
+      case 'erase':
+        setText(eraseTitle, eraseInfo);
+        return
+      case 'edit':
+        setText(eraseTitle, eraseInfo);
+        return
+      default:
+        console.log("how? mode set to unknown value");
+        return;
+    }
   }
 };
 
 const setText = (text1, text2) => {
+
   infoTitle.value = text1;
   infoText.value = text2;
 };
